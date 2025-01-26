@@ -2,9 +2,9 @@
 
 <div>
 
-[![arXiv](https://img.shields.io/badge/arXiv-Paper-%3CCOLOR%3E.svg)](https://arxiv.org/abs/2301.13430)
-![GitHub last commit](https://img.shields.io/github/last-commit/ChrisDong-THU/RezMaster)
-![GitHub issues](https://img.shields.io/github/issues-raw/ChrisDong-THU/RezMaster)
+[![arXiv](https://img.shields.io/badge/arXiv-Paper-%3CCOLOR%3E.svg)](https://arxiv.org/abs/)
+![GitHub last commit](https://img.shields.io/github/last-commit/ChrisDong-THU/GaussianToken)
+![GitHub issues](https://img.shields.io/github/issues-raw/ChrisDong-THU/GaussianToken)
 
 </div>
 
@@ -113,6 +113,6 @@ The pre-trained weights will be released soon.
 - [Deformable DETR](https://github.com/fundamentalvision/Deformable-DETR)
 - [GaussianImage](https://github.com/Xinjie-Q/GaussianImage)
 - [vector-quantize-pytorch](https://github.com/lucidrains/vector-quantize-pytorch)
-- [GaussianFormer](https://github.com/huang-yh/GaussianFormer)
 - [taming-transformers](https://github.com/CompVis/taming-transformers)
+- [GaussianFormer](https://github.com/huang-yh/GaussianFormer)
 - [Open-MAGVIT2](https://github.com/TencentARC/SEED-Voken)
