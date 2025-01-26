@@ -1,0 +1,202 @@
+seed_everything: true
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: 6
+  num_nodes: 1
+  precision: 16-mixed #32
+  max_epochs: 30
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: -1
+  log_every_n_steps: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "./logs/gqgan/cifar-test1/checkpoints/"
+        save_top_k: 1 # save all checkpoints
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "./logs/gqgan/"
+      version: "cifar-test1"
+      name:
+
+
+model:
+  class_path: gstk.models.gqgan.GQGAN
+  init_args:
+    fm_shape: &fm_shape [16, 16]
+    z_channels: &z_channels 3
+    embed_dim: &embed_dim 64
+    num_gs: &num_gs 64
+    xy_range: &xy_range [-1, 1]
+    initial_scale_range: &initial_scale_range [0.1, 4.0]
+    final_scale_range: &final_scale_range [0.1, 3.0]
+    include_opa: &include_opa False
+
+    img_encoder_cfg:
+      double_z: False
+      z_channels: *embed_dim # *z_channels
+      resolution: 128
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1, 2]  # num_down: len(ch_mult)-1
+      num_res_blocks: 4
+
+    img_decoder_cfg:
+      double_z: False
+      z_channels: *z_channels
+      resolution: 128
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1, 2]  # num_down: len(ch_mult)-1
+      num_res_blocks: 4
+
+    vq_cfg:
+      learnable_codebook: False
+      ema_update: True
+      sync_codebook: True
+      dim: *z_channels
+      codebook_size: 1024
+      accept_image_fmap: False
+      decay: 0.8
+      commitment_weight: 1.0
+      threshold_ema_dead_code: 2
+      kmeans_init: True
+      kmeans_iters: 10
+
+    gs_embed_cfg:
+      fm_lifter_cfg:
+        in_dim: *embed_dim
+        pe_version: 'sine'
+        out_dim: *embed_dim
+      gaussian_lifter_cfg:
+        num_anchor: *num_gs
+        embed_dim: *embed_dim
+        anchor_grad: True
+        ins_feat_grad: False
+        feature_dim: *embed_dim
+        include_opa: *include_opa
+      anchor_encoder_cfg:
+        embed_dim: *embed_dim
+        include_opa: *include_opa
+        feature_dim: *embed_dim
+      attn_encoder_cfg:
+        fm_shape: *fm_shape
+        encoder_layer_cfg:
+          embed_dim: *embed_dim
+          dropout: 0.1
+          activation: 'relu'
+          n_levels: 1
+          num_heads: 4
+          n_points: 4
+        num_layers: 2
+      attn_decoder_cfg:
+        fm_shape: *fm_shape
+        decoder_layer_cfg:
+          embed_dim: *embed_dim
+          dropout: 0.1
+          activation: 'relu'
+          n_levels: 1
+          num_heads: 4
+          n_points: 4
+        num_layers: 2
+        proj_drop: 0.1
+        residual_mode: "cat"
+      ffn_cfg:
+        in_channels: 128 # embed_dim*2
+        pre_norm: True
+        out_norm: False
+        embed_dim: *embed_dim
+        num_fcs: 2
+        ffn_drop: 0.0
+        add_identity: True
+      refine_cfg:
+        embed_dim: *embed_dim
+        xy_range: *xy_range # xy范围 [-1 1]
+        initial_scale_range: *initial_scale_range
+        final_scale_range: *final_scale_range
+        refine_state: [0, 1] # [0 1] 微调均值部分
+        include_opa: *include_opa
+        dim_feature: *embed_dim
+        z_channels: *z_channels
+      spconv_cfg:
+        in_channels: *embed_dim
+        out_channels: *embed_dim
+        kernel_size: 5
+        fm_shape: *fm_shape
+        use_out_proj: False
+      operation_order: [
+        "cross_attn",
+        "ffn",
+        "refine",
+        # "spconv",
+        "cross_attn",
+        "ffn",
+        "refine",
+        # "spconv",
+        "cross_attn",
+        "ffn",
+        "refine",
+      ]
+      op_param_share: False
+
+    loss_cfg:
+      disc_conditional: False
+      disc_in_channels: 3
+      disc_start_epoch: 0 # from 0 epoch
+      gan_start_epoch: 5
+      disc_weight: 0.8
+      gen_loss_weight: 0.1
+      lecam_loss_weight: 0.05
+      commit_weight: 0.25
+
+    use_ema: True
+    
+    optim_gen_cfg:
+      opt: "adamw"
+      lr: 2e-4
+      betas: [0.9, 0.999]
+      weight_decay: 0.01
+    
+    optim_disc_cfg:
+      opt: "adamw"
+      lr: 2e-4
+      betas: [0.9, 0.999]
+      weight_decay: 0.01
+
+    lr_scheduler_cfg:
+      sched: "cosine"
+      warmup_lr: 1e-6
+      min_lr: 0.0
+      warmup_epochs: 1 # epoch
+      step_on_epochs: False
+      num_epochs: null
+      updates_per_epoch: null
+
+
+data:
+  class_path: gstk.data.from_config.DataModuleFromConfig
+  init_args:
+    batch_size: 64
+    num_workers: 8
+    train:
+      target: gstk.data.dataset.MyCIFAR
+      params:
+        train: true
+    validation:
+      target: gstk.data.dataset.MyCIFAR
+      params:
+        train: false
+    test:
+      target: gstk.data.dataset.MyCIFAR
+      params:
+        train: false
+
+
+ckpt_path: null

@@ -1,0 +1,8 @@
+lightning==2.2.0
+jsonargparse[signatures]>=4.27.7
+albumentations==1.4.4
+omegaconf
+einops
+requests
+transformers==4.37.2
+lpips

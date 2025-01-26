@@ -1,0 +1,2 @@
+from .vqperceptual import DummyLoss
+

@@ -1,0 +1,127 @@
+seed_everything: true
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: 6
+  num_nodes: 1
+  precision: 16-mixed #32
+  max_epochs: 30
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: -1
+  log_every_n_steps: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "./logs/vqgan/mini-test1/checkpoints/"
+        save_top_k: 1 # save all checkpoints
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "./logs/vqgan/"
+      version: "mini-test1"
+      name:
+
+
+model:
+  class_path: gstk.models.gqgan.GQGAN
+  init_args:
+    fm_shape: &fm_shape [16, 16]
+    z_channels: &z_channels 8
+    embed_dim: &embed_dim 64
+    num_gs: &num_gs 256
+    xy_range: &xy_range [-1, 1]
+    initial_scale_range: &initial_scale_range [0.1, 4.0]
+    final_scale_range: &final_scale_range [0.1, 3.0]
+    include_opa: &include_opa False
+
+    img_encoder_cfg:
+      double_z: False
+      z_channels: *z_channels # *embed_dim
+      resolution: 128
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1, 1, 2, 2, 4]  # num_down: len(ch_mult)-1
+      num_res_blocks: 4
+
+    img_decoder_cfg:
+      double_z: False
+      z_channels: *z_channels
+      resolution: 128
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1, 1, 2, 2, 4]  # num_down: len(ch_mult)-1
+      num_res_blocks: 4
+
+    vq_cfg:
+      learnable_codebook: False
+      ema_update: True
+      sync_codebook: True
+      dim: *z_channels
+      codebook_size: 1024
+      accept_image_fmap: True
+      decay: 0.8
+      commitment_weight: 1.0
+      threshold_ema_dead_code: 2
+      kmeans_init: True
+      kmeans_iters: 10
+
+    loss_cfg:
+      disc_conditional: False
+      disc_in_channels: 3
+      disc_start_epoch: 0 # from 0 epoch
+      gan_start_epoch: 5
+      disc_weight: 0.8
+      gen_loss_weight: 0.1
+      lecam_loss_weight: 0.05
+      commit_weight: 0.25
+
+    use_ema: True
+    
+    optim_gen_cfg:
+      opt: "adamw"
+      lr: 2e-4
+      betas: [0.9, 0.999]
+      weight_decay: 0.01
+    
+    optim_disc_cfg:
+      opt: "adamw"
+      lr: 2e-4
+      betas: [0.9, 0.999]
+      weight_decay: 0.01
+
+    lr_scheduler_cfg:
+      sched: "cosine"
+      warmup_lr: 1e-6
+      min_lr: 0.0
+      warmup_epochs: 1 # epoch
+      step_on_epochs: False
+      num_epochs: null
+      updates_per_epoch: null
+
+
+data:
+  class_path: gstk.data.from_config.DataModuleFromConfig
+  init_args:
+    batch_size: 4
+    num_workers: 8
+    train:
+      target: gstk.data.dataset.MiniImagenet
+      params:
+        split: "train"
+    validation:
+      target: gstk.data.dataset.MiniImagenet
+      params:
+        split: "val"
+        transform: "val"
+    test:
+      target: gstk.data.dataset.MiniImagenet
+      params:
+        split: "test"
+
+
+ckpt_path: null # to resume
