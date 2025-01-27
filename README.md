@@ -20,7 +20,7 @@
         ├── test
         └── train
         ```
-    - Mini-ImageNet:
+    - [Mini-ImageNet](https://www.kaggle.com/datasets/jiajundong/mini-imagenet/):
         ```bash
         <path-to-dataset>/mini-imagenet/
         ├── images
@@ -34,18 +34,17 @@
         ├── ImageNet_class_index.json
         ├── ImageNet_val_label.txt
         ├── train
+        │   ├── n01440764
+        │   │   ├── n01440764_10026.JPEG
+        │   │   ├── n01440764_10027.JPEG
+        │   │   ├── ...
+        │   ├── n01443537
+        │   │   ├── n01443537_10007.JPEG
+        │   │   ├── n01443537_10014.JPEG
+        │   │   ├── ...
+        │   ├── ...
         └── val
-
-        <path-to-dataset>/imagenet/train/
-        ├── n01440764
-        │   ├── n01440764_10026.JPEG
-        │   ├── n01440764_10027.JPEG
-        │   ├── ...
-        ├── n01443537
-        │   ├── n01443537_10007.JPEG
-        │   ├── n01443537_10014.JPEG
-        │   ├── ...
-        ├── ...
+            ├── ...
         ```
 
 2. Write the following environment variables into file `.bashrc`.
@@ -68,13 +67,13 @@
    pip install -r requirements.txt
    pip install -r requirements-extra.txt
    ```
-3. Install gsplat & deformable attn modules.
+3. Install `gsplat` & `deformable attn` modules.
    ```bash
    cd gstk/modules/gsplat && python setup.py build install
    cd ../gaussianembed/ops && python setup.py build install
    ```
 
-> **Note**: Please first modify `requirements-extra.txt` for appropriate Pytorch version according to the CUDA (default is v12.1). 
+> **Note**: Please modify `requirements-extra.txt` first to match the appropriate PyTorch version based on the CUDA version (default is v12.1).
 
 # Training
 1. Change the script permissions.
@@ -101,13 +100,18 @@
     ```bash
     ./scripts/rec-1.sh
     ```
-- Metrics calculation
+- Metrics calculation.
     ```bash
     ./scripts/val-1.sh
     ```
 
 # Pretrained Models
-The pre-trained weights will be released soon.
+|      Dataset       | rFID  |                             Link                             | Comments |
+| :----------------: | :---: | :----------------------------------------------------------: | :------: |
+|   CIFAR100 (f=4)   | 12.94 | [cifar_gs64_cb1024](https://huggingface.co/McNu1ty/GaussianToken/tree/main/cifar-gqgan-gs64-cb1024) |   SOTA   |
+| ImageNet-1K (f=16) | 1.61  | [imagenet_gs256_cb1024](https://huggingface.co/McNu1ty/GaussianToken/tree/main/in-gqgan-gs256-cb1024) | SOTA[^*] |
+
+[^*]: Without altering traditional vector quantization methods, the GaussianEmbed module achieves the lowest FID across all tokenizers.
 
 # Acknowledgments
 - [Deformable DETR](https://github.com/fundamentalvision/Deformable-DETR)
