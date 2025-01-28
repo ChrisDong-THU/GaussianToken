@@ -2,7 +2,7 @@
 
 <div>
 
-[![arXiv](https://img.shields.io/badge/arXiv-Paper-%3CCOLOR%3E.svg)](https://arxiv.org/abs/)
+[![arXiv](https://img.shields.io/badge/arXiv-Paper-%3CCOLOR%3E.svg)](https://arxiv.org/abs/2501.15619)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ChrisDong-THU/GaussianToken)
 ![GitHub issues](https://img.shields.io/github/issues-raw/ChrisDong-THU/GaussianToken)
 
