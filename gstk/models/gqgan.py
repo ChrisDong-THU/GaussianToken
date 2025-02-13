@@ -118,6 +118,12 @@ class GQGAN(L.LightningModule):
         
         return dec
     
+    def decode_gaussian(self, gaussian):
+        fm_quant = render_gaussians(gaussian, self.render_set)
+        dec = self.img_decoder(fm_quant)
+        
+        return dec
+    
     def decode_code(self, indices):
         fm_quant = self.quantize.indices_to_codes(indices)
         dec = self.img_decoder(fm_quant)
