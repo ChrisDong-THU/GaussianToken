@@ -13,7 +13,7 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: "./logs/gqgan/mini-test1/checkpoints/"
-        save_top_k: 1 # save all checkpoints
+        save_top_k: 1
     - class_path: lightning.pytorch.callbacks.LearningRateMonitor
       init_args:
         logging_interval: step

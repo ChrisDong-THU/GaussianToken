@@ -108,7 +108,7 @@ class DAEncoder(nn.Module):
 class DADecoderLayer(nn.Module):
     def __init__(self, embed_dim, dropout=0.1, activation='relu', n_levels=1, num_heads=8, n_points=4):
         super().__init__()
-        self.self_attn = MHA(embed_dim, num_heads, dropout=dropout, batch_first=True) # MSDA not support fp16
+        self.self_attn = MHA(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.droupout1 = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(embed_dim)
         

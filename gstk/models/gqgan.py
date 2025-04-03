@@ -6,7 +6,6 @@ from contextlib import contextmanager
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
 
-# from ..modules.gaussianembed.img_module import Encoder, Decoder
 from ..modules.diffusionmodules.improved_model import Encoder, Decoder
 # from ..modules.gaussianembed.vq import VectorQuantize
 from ..modules.gaussianembed.vq_v2 import VectorQuantize
